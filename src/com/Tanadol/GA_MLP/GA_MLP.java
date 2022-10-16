@@ -12,12 +12,14 @@ public class GA_MLP {
     private double totalFitness;
 
     private double[] input = new double[30];
-    private double[] desireOutput = new double[1];
+    private double[] desiredOutput = new double[1];
 
     public Individual[] run(int maxGeneration, int populationSize, double crossoverRate, int crossoverPoint,
-                            double mutationProb, double mutateMin, double mutateMax) {
+                            double mutationProb, double mutateMin, double mutateMax, double[] input, double[] desiredOutput) {
         this.populationSize = populationSize;
         this.crossOverRate = crossoverRate;
+        this.input = input;
+        this.desiredOutput = desiredOutput;
 
         initPopulation();
 
@@ -29,6 +31,7 @@ public class GA_MLP {
             mutation(mutationProb, mutateMin, mutateMax);
             gen++;
         }
+        evaluateFitness();
         return population;
     }
 
@@ -42,7 +45,7 @@ public class GA_MLP {
     private void evaluateFitness() {
         totalFitness = 0;
         for (Individual p : population) {
-            p.fitness = 1.0 - p.network.feedForward(input, desireOutput);
+            p.fitness = 1.0 - p.network.feedForward(input, desiredOutput);
             totalFitness += p.fitness;
         }
     }

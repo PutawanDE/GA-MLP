@@ -16,7 +16,7 @@ public class Network {
     protected Matrix[] activations;
     protected Matrix[] weights;
     private Matrix[] biases;
-    private Matrix[] nodeOutputs;
+    protected double loss;
 
     private final double minWeight;
     private final double maxWeight;
@@ -40,7 +40,6 @@ public class Network {
         weights = new Matrix[layerCount - 1];
         this.biases = biases.clone();
         activations = new Matrix[layerCount];
-        nodeOutputs = new Matrix[layerCount];
 
         initWeight();
 
@@ -72,10 +71,10 @@ public class Network {
             Matrix net = Matrix.multiply(weights[i - 1], activations[i - 1]);
             Matrix output = net.add(biases[i - 1]);
             activations[i] = Matrix.applyFunction(output, activationFn);
-            nodeOutputs[i] = output;
         }
 
-        return calcLoss(desiredOutputVect);
+        loss = calcLoss(desiredOutputVect);
+        return loss;
     }
 
     // calculate Loss
