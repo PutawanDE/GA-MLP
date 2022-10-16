@@ -21,18 +21,20 @@ public class Individual {
     protected double selectProb;
 
     public Individual() {
-        Matrix[] biases = new Matrix[2];
-        biases[0] = new Matrix(16, 1);
-        biases[1] = new Matrix(1, 1);
+        Matrix[] biases = new Matrix[nodes.length - 1];
+        for (int i = 0; i < nodes.length - 1; i++) {
+            biases[i] = new Matrix(nodes[i + 1], 1);
+        }
+
         network = new Network(nodes, leakyReluFn, sigmoidFn, minWeight, maxWeight, biases);
         updateChromosome();
     }
 
     protected void updateNewWeights() {
-        Matrix[] newWeights = new Matrix[2];
+        Matrix[] newWeights = new Matrix[nodes.length - 1];
         int c = 0;
         for (int l = 0; l < nodes.length - 1; l++) {
-            newWeights[l] = new Matrix(nodes[l], nodes[l + 1]);
+            newWeights[l] = new Matrix(nodes[l + 1], nodes[l]);
             for (int i = 0; i < newWeights[l].getRows(); i++) {
                 for (int j = 0; j < newWeights[l].getCols(); j++) {
                     newWeights[l].data[i][j] = chromosome.get(c);

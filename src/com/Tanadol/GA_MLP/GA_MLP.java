@@ -11,8 +11,8 @@ public class GA_MLP {
     private Individual[] population = new Individual[populationSize];
     private double totalFitness;
 
-    private double[] input;
-    private double[] desireOutput;
+    private double[] input = new double[30];
+    private double[] desireOutput = new double[1];
 
     public void run(int maxGeneration) {
         initPopulation();
@@ -60,11 +60,15 @@ public class GA_MLP {
         for (int i = 0; i < n; i++) {
             double rand = random.nextDouble();
 
-            if (0.0 <= rand || rand <= cumulativeProb[0]) newPopulation.add(population[0]);
-
-            for (int j = 1; j < n; j++) {
-                if (cumulativeProb[j - 1] <= rand || rand <= cumulativeProb[j])
-                    newPopulation.add(population[j]);
+            if (0.0 <= rand || rand <= cumulativeProb[0]) {
+                newPopulation.add(population[0]);
+            } else {
+                for (int j = 1; j < n; j++) {
+                    if (cumulativeProb[j - 1] <= rand || rand <= cumulativeProb[j]) {
+                        newPopulation.add(population[j]);
+                        break;
+                    }
+                }
             }
         }
 
