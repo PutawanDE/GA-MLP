@@ -15,13 +15,14 @@ public class GA_MLP {
     private double[] desiredOutput = new double[1];
 
     public Individual[] run(int maxGeneration, int populationSize, double crossoverRate, int crossoverPoint,
-                            double mutationProb, double mutateMin, double mutateMax, double[] input, double[] desiredOutput) {
+                            double mutationProb, double mutateMin, double mutateMax, double[] input,
+                            double[] desiredOutput, double[][] chromosomes) {
         this.populationSize = populationSize;
         this.crossOverRate = crossoverRate;
         this.input = input;
         this.desiredOutput = desiredOutput;
 
-        initPopulation();
+        initPopulation(chromosomes);
 
         int gen = 0;
         while (gen < maxGeneration) {
@@ -35,10 +36,14 @@ public class GA_MLP {
         return population;
     }
 
-    private void initPopulation() {
+    private void initPopulation(double[][] chromosomes) {
         population = new Individual[populationSize];
         for (int i = 0; i < population.length; i++) {
-            population[i] = new Individual();
+            if (chromosomes[i] != null) {
+                population[i] = new Individual(chromosomes[i]);
+            } else {
+                population[i] = new Individual();
+            }
         }
     }
 
@@ -125,8 +130,10 @@ public class GA_MLP {
             Individual offspring1 = new Individual();
             Individual offspring2 = new Individual();
 
-            int[] crossingSites = new int[n];
-            for (int j = 0; j < n; j++) {
+            int[] crossingSites = new int[n + 2];
+            crossingSites[0] = 0;
+            crossingSites[n - 1] = parent1.chromosome.size() - 1;
+            for (int j = 1; j < n - 1; j++) {
                 crossingSites[j] = random.nextInt(parent1.chromosome.size());
             }
             Arrays.sort(crossingSites);

@@ -11,10 +11,26 @@ public class Main {
         try {
             GA_MLP ga = new GA_MLP();
             Pair<double[][], double[][]> inOut = readTrainingData();
+            int rows = inOut.x.length;
 
-            Individual[] solution = ga.run(100, 100, 0.3, 3,
-                    0.001, -1.0, 1.0, inOut.x[0], inOut.y[0]);
-            System.out.println(solution[0].fitness);
+            double[][] solChromosomes = new double[50][];
+            for (int i = 0; i < rows; i++) {
+                double[] inputVect = inOut.x[i];
+                double[] outputVect = inOut.y[i];
+
+                Individual[] solution = ga.run(100, 50, 0.3, 3,
+                        0.001, -1.0, 1.0, inputVect, outputVect, solChromosomes);
+
+                solChromosomes = new double[solution.length][];
+                for (int j = 0; j < solution.length; j++) {
+                    System.out.println(solution[j].fitness);
+                    solChromosomes[j] = new double[solution[j].chromosome.size()];
+                    for (int k = 0; k < solution[j].chromosome.size(); k++) {
+                        solChromosomes[j][k] = solution[j].chromosome.get(k);
+                    }
+                }
+                System.out.println("----------------NEW ROW-----------------");
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -26,7 +42,7 @@ public class Main {
         List<double[]> output = new ArrayList<>();
 
         BufferedReader br = new BufferedReader(new
-                FileReader("D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\wbc_data.csv"));
+                FileReader("D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\Data\\z-score_norm\\train1.csv"));
         String line;
         while ((line = br.readLine()) != null) {
             String[] cols = line.split(",");
