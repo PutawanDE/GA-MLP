@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Individual {
-    private static final MathFunction tanhFn = (x) -> 2.0 / (1 + Math.exp(-2.0 * x)) - 1.0;
-
     private static final MathFunction sigmoidFn = (x) -> 1.0 / (1.0 + Math.exp(x));
 
     private static final double minWeight = 0.0;
@@ -23,17 +21,8 @@ public class Individual {
             biases[i] = new Matrix(nodes[i + 1], 1);
         }
 
-        network = new Network(nodes, tanhFn, sigmoidFn, minWeight, maxWeight, biases);
+        network = new Network(nodes, sigmoidFn, sigmoidFn, minWeight, maxWeight, biases);
         updateChromosome();
-    }
-
-    public Individual(double[] chromosome) {
-        this();
-        this.chromosome.clear();
-        for (double c : chromosome) {
-            this.chromosome.add(c);
-        }
-        updateNewWeights();
     }
 
     protected void updateNewWeights() {

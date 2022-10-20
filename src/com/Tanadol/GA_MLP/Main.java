@@ -13,25 +13,22 @@ public class Main {
             Pair<double[][], double[][]> inOut = readTrainingData();
             int rows = inOut.x.length;
 
-            double[][] solChromosomes = new double[50][];
+            Individual[] lastSol = null;
             for (int i = 0; i < rows; i++) {
                 double[] inputVect = inOut.x[i];
                 double[] outputVect = inOut.y[i];
 
-                Individual[] solution = ga.run(100, 50, 0.3, 3,
-                        0.001, -1.0, 1.0, inputVect, outputVect, solChromosomes);
+                Individual[] solution = ga.run(100, 200, 0.38, 3,
+                        0.001, -2.0, 2.0, inputVect, outputVect, lastSol);
 
-                solChromosomes = new double[solution.length][];
-                for (int j = 0; j < solution.length; j++) {
-                    System.out.println(solution[j].fitness);
-                    solChromosomes[j] = new double[solution[j].chromosome.size()];
-                    for (int k = 0; k < solution[j].chromosome.size(); k++) {
-                        solChromosomes[j][k] = solution[j].chromosome.get(k);
-                    }
+                lastSol = solution;
+                double maxFitness = Integer.MIN_VALUE;
+                for (Individual individual : solution) {
+                    if (individual.fitness > maxFitness) maxFitness = individual.fitness;
                 }
-                System.out.println("----------------NEW ROW-----------------");
+                System.out.println("D: " + maxFitness);
+                System.out.println("---------------------------------");
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }

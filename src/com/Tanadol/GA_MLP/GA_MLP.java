@@ -16,17 +16,24 @@ public class GA_MLP {
 
     public Individual[] run(int maxGeneration, int populationSize, double crossoverRate, int crossoverPoint,
                             double mutationProb, double mutateMin, double mutateMax, double[] input,
-                            double[] desiredOutput, double[][] chromosomes) {
+                            double[] desiredOutput, Individual[] initPopulation) {
         this.populationSize = populationSize;
         this.crossOverRate = crossoverRate;
         this.input = input;
         this.desiredOutput = desiredOutput;
 
-        initPopulation(chromosomes);
+        if (initPopulation == null) initPopulation();
 
         int gen = 0;
         while (gen < maxGeneration) {
             evaluateFitness();
+            if(gen == 0) {
+                double max = 0.0;
+                for (Individual p : population) {
+                    if (p.fitness > max) max = p.fitness;
+                }
+                System.out.println("f: " + max);
+            }
             select();
             crossover(crossoverPoint);
             mutation(mutationProb, mutateMin, mutateMax);
@@ -36,14 +43,10 @@ public class GA_MLP {
         return population;
     }
 
-    private void initPopulation(double[][] chromosomes) {
+    private void initPopulation() {
         population = new Individual[populationSize];
         for (int i = 0; i < population.length; i++) {
-            if (chromosomes[i] != null) {
-                population[i] = new Individual(chromosomes[i]);
-            } else {
-                population[i] = new Individual();
-            }
+            population[i] = new Individual();
         }
     }
 
@@ -132,7 +135,7 @@ public class GA_MLP {
 
             int[] crossingSites = new int[n + 2];
             crossingSites[0] = 0;
-            crossingSites[n - 1] = parent1.chromosome.size() - 1;
+            crossingSites[n - 1] = parent1.chromosome.size();
             for (int j = 1; j < n - 1; j++) {
                 crossingSites[j] = random.nextInt(parent1.chromosome.size());
             }
