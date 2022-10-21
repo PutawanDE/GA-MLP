@@ -1,5 +1,7 @@
 package com.Tanadol.GA_MLP;
 
+import com.sun.source.tree.Tree;
+
 import java.util.*;
 
 public class GA_MLP {
@@ -7,40 +9,38 @@ public class GA_MLP {
 
     private int populationSize;
     private double crossOverRate;
+    private double elitePercentage = 10;
+    private int elitesCount;
 
     private Individual[] population;
+    private Individual[] elites;
     private double totalFitness;
 
-    private double[] input = new double[30];
-    private double[] desiredOutput = new double[1];
+    public TreeSet<Individual> sortedStrongestIndividuals = new TreeSet<>(
+            (o1, o2) -> Double.compare(o2.fitness, o1.fitness));
 
     public Individual[] run(int maxGeneration, int populationSize, double crossoverRate, int crossoverPoint,
-                            double mutationProb, double mutateMin, double mutateMax, double[] input,
-                            double[] desiredOutput, Individual[] initPopulation) {
+                            double mutationProb, double mutateMin, double mutateMax, double[][] input,
+                            double[][] desiredOutput, Individual[] startPopulation) {
         this.populationSize = populationSize;
         this.crossOverRate = crossoverRate;
-        this.input = input;
-        this.desiredOutput = desiredOutput;
+        this.elitesCount = (int) ((elitePercentage / 100.0) * populationSize);
+        this.elites = new Individual[elitesCount];
 
-        if (initPopulation == null) initPopulation();
+        if (startPopulation == null) initPopulation();
+        else population = startPopulation;
 
         int gen = 0;
         while (gen < maxGeneration) {
-            evaluateFitness();
-            if(gen == 0) {
-                double max = 0.0;
-                for (Individual p : population) {
-                    if (p.fitness > max) max = p.fitness;
-                }
-                System.out.println("f: " + max);
-            }
+            evaluateFitness(input, desiredOutput);
             select();
             crossover(crossoverPoint);
             mutation(mutationProb, mutateMin, mutateMax);
             gen++;
+            System.out.println("gen");
         }
-        evaluateFitness();
-        return population;
+        evaluateFitness(input, desiredOutput);
+        return sortedStrongestIndividuals.toArray(new Individual[0]);
     }
 
     private void initPopulation() {
@@ -50,11 +50,30 @@ public class GA_MLP {
         }
     }
 
-    private void evaluateFitness() {
+    private void evaluateFitness(double[][] input, double[][] desiredOutput) {
         totalFitness = 0;
-        for (Individual p : population) {
-            p.fitness = 1.0 - p.network.feedForward(input, desiredOutput);
-            totalFitness += p.fitness;
+        sortedStrongestIndividuals.clear();
+
+        for (int i = 0; i < populationSize; i++) {
+            int randRow = random.nextInt(input.length);
+            population[i].fitness = 1.0
+                    / (population[i].network.feedForward(input[randRow], desiredOutput[randRow]) + 0.000001);
+            totalFitness += population[i].fitness;
+
+            if(!sortedStrongestIndividuals.add(population[i]))
+                System.out.println("fuck");
+        }
+        addElites();
+    }
+
+    private void addElites() {
+        int i = 0;
+        for (Individual p : sortedStrongestIndividuals) {
+            if (i < elitesCount) {
+                elites[i] = p;
+                p.isElite = true;
+            }
+            i++;
         }
     }
 
@@ -77,24 +96,16 @@ public class GA_MLP {
         for (int i = 0; i < n; i++) {
             double rand = random.nextDouble();
 
-            if (0.0 <= rand || rand <= cumulativeProb[0]) {
+            if (rand <= cumulativeProb[0]) {
                 selected.add(population[0]);
             } else {
                 for (int j = 1; j < n; j++) {
-                    if (cumulativeProb[j - 1] <= rand || rand <= cumulativeProb[j]) {
+                    if (cumulativeProb[j - 1] <= rand && rand <= cumulativeProb[j]) {
                         selected.add(population[j]);
                         break;
                     }
                 }
             }
-        }
-
-        // Selection for replacement
-        int currentSize = selected.size();
-        while (currentSize < populationSize) {
-            int randIdx = random.nextInt(populationSize);
-            selected.add(population[randIdx]);
-            currentSize++;
         }
 
         population = selected.toArray(new Individual[populationSize]);
@@ -103,13 +114,18 @@ public class GA_MLP {
     // N-point Cross-Over
     private void crossover(int n) {
         List<Individual> newPopulation = new ArrayList<>(populationSize);
-        List<Individual> matingPool = new ArrayList<>();
+        List<Individual> matingPool = new ArrayList<>(populationSize);
         int lastInMatingPool = 0;
         boolean[] isParent = new boolean[populationSize];
 
         for (int i = 0; i < populationSize; i++) {
             double rand = random.nextDouble();
-            if (rand < crossOverRate) {
+
+            if (i < elitesCount * 0.5) {
+                matingPool.add(elites[i]);
+                lastInMatingPool = i;
+                isParent[i] = true;
+            } else if (rand < crossOverRate && !population[i].isElite) {
                 matingPool.add(population[i]);
                 lastInMatingPool = i;
                 isParent[i] = true;
@@ -166,11 +182,13 @@ public class GA_MLP {
 
     private void mutation(double mutationProb, double min, double max) {
         for (Individual p : population) {
-            for (int i = 0; i < p.chromosome.size(); i++) {
-                double q = random.nextDouble();
-                if (q < mutationProb) {
-                    p.chromosome.set(i, random.nextDouble(min, max));
-                    p.updateNewWeights();
+            if (!p.isElite) {
+                for (int i = 0; i < p.chromosome.size(); i++) {
+                    double q = random.nextDouble();
+                    if (q < mutationProb) {
+                        p.chromosome.set(i, random.nextDouble(min, max));
+                        p.updateNewWeights();
+                    }
                 }
             }
         }
