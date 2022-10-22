@@ -10,6 +10,7 @@ public class Individual {
     private static final double minWeight = 0.0;
     private static final double maxWeight = 1.0;
     private static final int[] nodes = new int[]{30, 16, 1};
+    private static final Matrix[] biases = initBiasMat();
 
     protected Network network;
     protected List<Double> chromosome = new ArrayList<>();
@@ -17,35 +18,38 @@ public class Individual {
     protected double selectProb;
     protected boolean isElite;
 
-    public Individual() {
+    private static Matrix[] initBiasMat() {
         Matrix[] biases = new Matrix[nodes.length - 1];
         for (int i = 0; i < nodes.length - 1; i++) {
             biases[i] = new Matrix(nodes[i + 1], 1);
         }
+        return biases;
+    }
 
+    public Individual(Individual i) {
+        this.network = new Network(i.network);
+        this.chromosome = new ArrayList<>(i.chromosome);
+        this.fitness = i.fitness;
+        this.selectProb = i.fitness;
+        this.isElite = i.isElite;
+    }
+
+    public Individual() {
         network = new Network(nodes, sigmoidFn, sigmoidFn, minWeight, maxWeight, biases);
-        updateChromosome();
+        updateChromosome(network.weights);
     }
 
-    protected void updateNewWeights() {
-        Matrix[] newWeights = new Matrix[nodes.length - 1];
-        int c = 0;
-        for (int l = 0; l < nodes.length - 1; l++) {
-            newWeights[l] = new Matrix(nodes[l + 1], nodes[l]);
-            for (int i = 0; i < newWeights[l].getRows(); i++) {
-                for (int j = 0; j < newWeights[l].getCols(); j++) {
-                    newWeights[l].data[i][j] = chromosome.get(c);
-                    c++;
-                }
-            }
-        }
-        network.weights = newWeights;
-        updateChromosome();
+    protected double evaluateFitness(double[] input, double[] desiredOutput) {
+        network = new Network(nodes, sigmoidFn, sigmoidFn, minWeight, maxWeight, biases, chromosome);
+
+        fitness = 1.0 / (network.feedForward(input, desiredOutput) + 0.000001);
+        updateChromosome(network.weights);
+        return fitness;
     }
 
-    private void updateChromosome() {
+    private void updateChromosome(Matrix[] weights) {
         chromosome.clear();
-        for (Matrix m : network.weights) {
+        for (Matrix m : weights) {
             for (int i = 0; i < m.getRows(); i++) {
                 for (int j = 0; j < m.getCols(); j++) {
                     chromosome.add(m.data[i][j]);
@@ -54,7 +58,7 @@ public class Individual {
         }
     }
 
-    public int[] evaluate(double[][] input, double[][] desiredOutputs, StringBuilder evalStringSb) {
+    public int[] evaluateInput(double[][] input, double[][] desiredOutputs, StringBuilder evalStringSb) {
         int tp = 0, tn = 0, fp = 0, fn = 0;
         for (int i = 0; i < input.length; i++) {
             this.network.feedForward(input[i], desiredOutputs[i]);

@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 
 public class Main {
     public static void main(String[] args) {
@@ -21,7 +20,7 @@ public class Main {
                 Individual sol = train(trainingSet);
 
                 Pair<double[][], double[][]> testSet = readTrainingData(path + "test" + i + ".csv");
-                int[] testConfusionMat = sol.evaluate(testSet.x, testSet.y, evalResultStr);
+                int[] testConfusionMat = sol.evaluateInput(testSet.x, testSet.y, evalResultStr);
 
                 evalResultStr.append("Test Data Confusion Matrix: ").append(i).append('\n');
                 test_tp += testConfusionMat[0];
@@ -52,23 +51,18 @@ public class Main {
 //            double[] inputVect = inOut.x[i];
 //            double[] outputVect = inOut.y[i];
 
-            Individual[] solution = ga.run(100, 50, 0.34, 3,
-                    0.01, 10.0, 15.0, inOut.x, inOut.y, lastSol);
+            Individual[] solution = ga.run(150, 50, 0.38, 3,
+                    0.001, 0.0, 15.0, inOut.x, inOut.y, lastSol);
 
             lastSol = solution;
 
-            System.out.println(solution[0]);
+            System.out.println(solution[0].fitness);
             long finish = System.currentTimeMillis();
             System.out.println("Elapsed Time row " + i + ": " + (finish - start));
             System.out.println("---------------------------------");
         }
 
-        double maxFitness = 0.0;
-        for (Individual individual : lastSol) {
-            if (individual.fitness > maxFitness) {
-                bestSolution = individual;
-            }
-        }
+        bestSolution = lastSol[0];
         System.out.println("D: " + bestSolution.fitness);
         long finishAll = System.currentTimeMillis();
         System.out.println("Total Elapsed Time: " + (finishAll - startAll));

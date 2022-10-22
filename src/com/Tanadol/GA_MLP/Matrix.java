@@ -9,6 +9,21 @@ public class Matrix {
 
     public double[][] data;
 
+    public Matrix(Matrix matrix) {
+        this.rows = matrix.rows;
+        this.cols = matrix.cols;
+
+        if (matrix.data == null) {
+            this.data = null;
+        } else {
+            double[][] cloneData = new double[matrix.data.length][];
+            for (int i = 0; i < matrix.data.length; i++) {
+                cloneData[i] = matrix.data[i].clone();
+            }
+            this.data = cloneData;
+        }
+    }
+
     public Matrix(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;

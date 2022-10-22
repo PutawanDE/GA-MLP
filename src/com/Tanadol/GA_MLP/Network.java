@@ -1,5 +1,6 @@
 package com.Tanadol.GA_MLP;
 
+import java.util.List;
 import java.util.Random;
 
 interface MathFunction {
@@ -7,8 +8,8 @@ interface MathFunction {
 }
 
 public class Network {
-    protected final int inputLength;
-    protected final int desiredOutputLength;
+    protected int inputLength;
+    protected int desiredOutputLength;
 
     protected int layerCount;
     private int[] nodeInLayerCount;
@@ -18,16 +19,72 @@ public class Network {
     private Matrix[] biases;
     protected double loss;
 
-    private final double minWeight;
-    private final double maxWeight;
+    private double minWeight;
+    private double maxWeight;
 
-    private final MathFunction hiddenLayerActivationFn;
-    private final MathFunction outputLayerActivationFn;
+    private MathFunction hiddenLayerActivationFn;
+    private MathFunction outputLayerActivationFn;
 
     private static final Random random = new Random();
 
+    public Network(Network n) {
+        this.inputLength = n.inputLength;
+        this.desiredOutputLength = n.desiredOutputLength;
+
+        this.layerCount = n.layerCount;
+        this.nodeInLayerCount = n.nodeInLayerCount.clone();
+
+        this.activations = new Matrix[n.activations.length];
+        for (int i = 0; i < n.activations.length; i++) {
+            this.activations[i] = new Matrix(n.activations[i]);
+        }
+
+        this.weights = new Matrix[n.weights.length];
+        for (int i = 0; i < n.weights.length; i++) {
+            this.weights[i] = new Matrix(n.weights[i]);
+        }
+
+        this.biases = new Matrix[n.biases.length];
+        for (int i = 0; i < n.biases.length; i++) {
+            this.biases[i] = new Matrix(n.biases[i]);
+        }
+
+        this.loss = n.loss;
+
+        this.minWeight = n.minWeight;
+        this.maxWeight = n.maxWeight;
+        this.hiddenLayerActivationFn = n.hiddenLayerActivationFn;
+        this.outputLayerActivationFn = n.hiddenLayerActivationFn;
+    }
+
     public Network(int[] nodeInLayerCount, MathFunction hiddenLayerActivation,
                    MathFunction outputLayerActivation, double minWeight, double maxWeight, Matrix[] biases) {
+        initNetwork(nodeInLayerCount, hiddenLayerActivation, outputLayerActivation, minWeight, maxWeight, biases);
+        initWeight();
+    }
+
+    public Network(int[] nodeInLayerCount, MathFunction hiddenLayerActivation,
+                   MathFunction outputLayerActivation, double minWeight, double maxWeight, Matrix[] biases,
+                   List<Double> weights) {
+        initNetwork(nodeInLayerCount, hiddenLayerActivation, outputLayerActivation, minWeight, maxWeight, biases);
+
+        // set custom weights
+        Matrix[] newWeights = new Matrix[nodeInLayerCount.length - 1];
+        int c = 0;
+        for (int l = 0; l < nodeInLayerCount.length - 1; l++) {
+            newWeights[l] = new Matrix(nodeInLayerCount[l + 1], nodeInLayerCount[l]);
+            for (int i = 0; i < newWeights[l].getRows(); i++) {
+                for (int j = 0; j < newWeights[l].getCols(); j++) {
+                    newWeights[l].data[i][j] = weights.get(c);
+                    c++;
+                }
+            }
+        }
+        this.weights = newWeights;
+    }
+
+    private void initNetwork(int[] nodeInLayerCount, MathFunction hiddenLayerActivation,
+                             MathFunction outputLayerActivation, double minWeight, double maxWeight, Matrix[] biases) {
         this.layerCount = nodeInLayerCount.length;
         this.nodeInLayerCount = nodeInLayerCount;
 
@@ -37,14 +94,12 @@ public class Network {
         this.minWeight = minWeight;
         this.maxWeight = maxWeight;
 
-        weights = new Matrix[layerCount - 1];
+        this.weights = new Matrix[layerCount - 1];
         this.biases = biases.clone();
-        activations = new Matrix[layerCount];
+        this.activations = new Matrix[layerCount];
 
-        initWeight();
-
-        inputLength = nodeInLayerCount[0];
-        desiredOutputLength = nodeInLayerCount[nodeInLayerCount.length - 1];
+        this.inputLength = nodeInLayerCount[0];
+        this.desiredOutputLength = nodeInLayerCount[nodeInLayerCount.length - 1];
     }
 
     private void initWeight() {
@@ -87,5 +142,14 @@ public class Network {
         }
         loss = sse / desiredOutputLength;
         return loss;
+//        double y = desiredOutputVect[0];
+//        double p = activations[layerCount - 1].data[0][0];
+//
+//        if (y == 0.0) {
+//            loss = -Math.log(1.0 - p);
+//        } else if (y == 1.0) {
+//            loss = -Math.log(p);
+//        }
+//        return loss;
     }
 }
