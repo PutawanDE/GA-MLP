@@ -15,8 +15,8 @@ public class GA_MLP {
     private double totalFitness;
 
     public Individual[] run(int maxGeneration, int populationSize, double crossoverRate, int crossoverPoint,
-                            double mutationProb, double mutateMin, double mutateMax, double[][] input,
-                            double[][] desiredOutput, Individual[] startPopulation) {
+                            double mutationProb, double mutateMin, double mutateMax, double[] input,
+                            double[] desiredOutput, Individual[] startPopulation) {
         this.populationSize = populationSize;
         this.crossOverRate = crossoverRate;
         this.elitesCount = (int) ((elitePercentage / 100.0) * populationSize);
@@ -28,9 +28,11 @@ public class GA_MLP {
         int gen = 0;
         while (gen < maxGeneration) {
             evaluateFitness(input, desiredOutput);
-            select();
-            crossover(crossoverPoint);
-            mutation(mutationProb, mutateMin, mutateMax);
+            findElites();
+            Individual[] toCrossMutate = Arrays.copyOfRange(population, (int) (elites.length * 0.5), populationSize);
+            tournamentSelect(toCrossMutate, 2);
+            crossover(toCrossMutate, crossoverPoint);
+            mutation(toCrossMutate, mutationProb, mutateMin, mutateMax);
             gen++;
         }
         evaluateFitness(input, desiredOutput);
@@ -44,25 +46,22 @@ public class GA_MLP {
         }
     }
 
-    private void evaluateFitness(double[][] input, double[][] desiredOutput) {
+    private void evaluateFitness(double[] input, double[] desiredOutput) {
         totalFitness = 0;
         for (int i = 0; i < populationSize; i++) {
-            int randRow = random.nextInt(input.length);
-            totalFitness += population[i].evaluateFitness(input[randRow], desiredOutput[randRow]);
+            totalFitness += population[i].evaluateFitness(input, desiredOutput);
         }
-
-        Arrays.sort(population, (o1, o2) -> Double.compare(o2.fitness, o1.fitness));
-        addElites();
     }
 
-    private void addElites() {
+    private void findElites() {
+        Arrays.sort(population, (o1, o2) -> Double.compare(o2.fitness, o1.fitness));
         for (int i = 0; i < elitesCount; i++) {
             elites[i] = population[i];
             population[i].isElite = true;
         }
     }
 
-    private void select() {
+    private void rouletteWheelSelect() {
         List<Individual> selected = new ArrayList<>(populationSize);
         // Using Roulette Wheel Selection
         // Find selection prob. and init cumulative prob.
@@ -96,22 +95,35 @@ public class GA_MLP {
         population = selected.toArray(new Individual[populationSize]);
     }
 
+    private void tournamentSelect(Individual[] group, int k) {
+        List<Individual> selected = new ArrayList<>(group.length);
+
+        for (int j = 0; j < group.length; j++) {
+            Individual best = null;
+            for (int i = 0; i < k; i++) {
+                int rand = random.nextInt(group.length);
+                if (best == null || group[rand].fitness >= best.fitness) {
+                    best = group[rand];
+                }
+            }
+            selected.add(new Individual(best));
+        }
+
+        selected.addAll(List.of(elites));
+        population = selected.toArray(new Individual[0]);
+    }
+
     // N-point Cross-Over
-    private void crossover(int n) {
-        List<Individual> newPopulation = new ArrayList<>(populationSize);
-        List<Individual> matingPool = new ArrayList<>(populationSize);
+    private void crossover(Individual[] group, int n) {
+        List<Individual> newPopulation = new ArrayList<>(group.length);
+        List<Individual> matingPool = new ArrayList<>(group.length);
         int lastInMatingPool = 0;
-        boolean[] isParent = new boolean[populationSize];
+        boolean[] isParent = new boolean[group.length];
 
-        for (int i = 0; i < populationSize; i++) {
+        for (int i = 0; i < group.length; i++) {
             double rand = random.nextDouble();
-
-            if (i < elitesCount * 0.5) {
-                matingPool.add(elites[i]);
-                lastInMatingPool = i;
-                isParent[i] = true;
-            } else if (rand < crossOverRate && !population[i].isElite) {
-                matingPool.add(population[i]);
+            if (rand < crossOverRate) {
+                matingPool.add(group[i]);
                 lastInMatingPool = i;
                 isParent[i] = true;
             }
@@ -157,15 +169,16 @@ public class GA_MLP {
             newPopulation.add(offspring2);
         }
 
-        for (int i = 0; i < populationSize; i++) {
-            if (!isParent[i]) newPopulation.add(population[i]);
+        for (int i = 0; i < group.length; i++) {
+            if (!isParent[i]) newPopulation.add(group[i]);
         }
 
-        population = newPopulation.toArray(new Individual[0]);
+        newPopulation.addAll(List.of(elites));
+        this.population = newPopulation.toArray(new Individual[0]);
     }
 
-    private void mutation(double mutationProb, double min, double max) {
-        for (Individual p : population) {
+    private void mutation(Individual[] group, double mutationProb, double min, double max) {
+        for (Individual p : group) {
             if (!p.isElite) {
                 for (int i = 0; i < p.chromosome.size(); i++) {
                     double q = random.nextDouble();

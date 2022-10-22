@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        int k = 1;
+        int k = 10;
         String path = "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\Data\\z-score_norm\\";
 
         try {
@@ -44,22 +44,25 @@ public class Main {
         GA_MLP ga = new GA_MLP();
         int rows = inOut.x.length;
         Individual[] lastSol = null;
-        Individual bestSolution = new Individual();
+        Individual bestSolution;
         long startAll = System.currentTimeMillis();
-        for (int i = 0; i < rows; i++) {
-            long start = System.currentTimeMillis();
-//            double[] inputVect = inOut.x[i];
-//            double[] outputVect = inOut.y[i];
 
-            Individual[] solution = ga.run(150, 50, 0.38, 3,
-                    0.001, 0.0, 15.0, inOut.x, inOut.y, lastSol);
+        for (int e = 1; e <= 1; e++) {
+            for (int i = 0; i < rows; i++) {
+                long start = System.currentTimeMillis();
+                double[] input = inOut.x[i];
+                double[] desiredOutput = inOut.y[i];
 
-            lastSol = solution;
+                Individual[] solution = ga.run(150, 50, 0.38, 3,
+                        0.005, 0.0, 10.0, input, desiredOutput, lastSol);
 
-            System.out.println(solution[0].fitness);
-            long finish = System.currentTimeMillis();
-            System.out.println("Elapsed Time row " + i + ": " + (finish - start));
-            System.out.println("---------------------------------");
+                lastSol = solution;
+
+                System.out.println(solution[0].fitness);
+                long finish = System.currentTimeMillis();
+                System.out.println("Epoch: " + e + " Elapsed Time iteration " + (i + 1) + ": " + (finish - start));
+                System.out.println("---------------------------------");
+            }
         }
 
         bestSolution = lastSol[0];

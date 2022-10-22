@@ -134,22 +134,22 @@ public class Network {
 
     // calculate Loss
     private double calcLoss(double[] desiredOutputVect) {
-        double sse = 0;
-
-        for (int i = 0; i < desiredOutputLength; i++) {
-            double error = desiredOutputVect[i] - activations[layerCount - 1].data[i][0];
-            sse = sse + (error * error);
-        }
-        loss = sse / desiredOutputLength;
-        return loss;
-//        double y = desiredOutputVect[0];
-//        double p = activations[layerCount - 1].data[0][0];
+//        double sse = 0;
 //
-//        if (y == 0.0) {
-//            loss = -Math.log(1.0 - p);
-//        } else if (y == 1.0) {
-//            loss = -Math.log(p);
+//        for (int i = 0; i < desiredOutputLength; i++) {
+//            double error = desiredOutputVect[i] - activations[layerCount - 1].data[i][0];
+//            sse = sse + (error * error);
 //        }
+//        loss = sse / desiredOutputLength;
 //        return loss;
+        double y = desiredOutputVect[0];
+        double p = activations[layerCount - 1].data[0][0];
+
+        if (y == 0.0) {
+            loss = -Math.log(1.0 - p);
+        } else if (y == 1.0) {
+            loss = -Math.log(p);
+        }
+        return loss;
     }
 }

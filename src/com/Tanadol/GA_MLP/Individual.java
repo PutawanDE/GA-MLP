@@ -42,7 +42,8 @@ public class Individual {
     protected double evaluateFitness(double[] input, double[] desiredOutput) {
         network = new Network(nodes, sigmoidFn, sigmoidFn, minWeight, maxWeight, biases, chromosome);
 
-        fitness = 1.0 / (network.feedForward(input, desiredOutput) + 0.000001);
+        double loss = network.feedForward(input, desiredOutput);
+        fitness = 1.0 / (loss + 0.000001);
         updateChromosome(network.weights);
         return fitness;
     }
@@ -64,10 +65,14 @@ public class Individual {
             this.network.feedForward(input[i], desiredOutputs[i]);
 
             double predicted = this.network.activations[nodes.length - 1].data[0][0];
+//            double output1 = this.network.activations[nodes.length - 1].data[0][0];
+//            double output2 = this.network.activations[nodes.length - 1].data[1][0];
+
             System.out.println(predicted);
 
             // 1 for positive, 0 for negative, positive->first output is 1
             int predictedPositiveOrNegative = predicted >= 0.4 ? 1 : 0;
+//            int predictedPositiveOrNegative = output1 > output2 ? 1 : 0;
             int actualPositiveOrNegative = (int) desiredOutputs[i][0];
 
             if (actualPositiveOrNegative == 1 && predictedPositiveOrNegative == 1) {
