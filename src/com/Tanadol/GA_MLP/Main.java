@@ -8,8 +8,8 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        int k = 10;
-        String path = "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\Data\\z-score_norm\\";
+        int k = 1;
+        String path = "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\Data\\min-max_norm\\";
 
         try {
             int test_tp = 0, test_tn = 0, test_fp = 0, test_fn = 0;
@@ -54,7 +54,7 @@ public class Main {
                 double[] desiredOutput = inOut.y[i];
 
                 Individual[] solution = ga.run(150, 50, 0.38, 3,
-                        0.005, 0.0, 10.0, input, desiredOutput, lastSol);
+                        0.001, 0.7, 1.0, input, desiredOutput, lastSol);
 
                 lastSol = solution;
 

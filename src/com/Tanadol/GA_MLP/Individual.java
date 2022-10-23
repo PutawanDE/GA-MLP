@@ -15,7 +15,6 @@ public class Individual {
     protected Network network;
     protected List<Double> chromosome = new ArrayList<>();
     protected double fitness;
-    protected double selectProb;
     protected boolean isElite;
 
     private static Matrix[] initBiasMat() {
@@ -30,7 +29,6 @@ public class Individual {
         this.network = new Network(i.network);
         this.chromosome = new ArrayList<>(i.chromosome);
         this.fitness = i.fitness;
-        this.selectProb = i.fitness;
         this.isElite = i.isElite;
     }
 

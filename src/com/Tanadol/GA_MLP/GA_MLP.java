@@ -12,7 +12,6 @@ public class GA_MLP {
 
     private Individual[] population;
     private Individual[] elites;
-    private double totalFitness;
 
     public Individual[] run(int maxGeneration, int populationSize, double crossoverRate, int crossoverPoint,
                             double mutationProb, double mutateMin, double mutateMax, double[] input,
@@ -30,7 +29,7 @@ public class GA_MLP {
             evaluateFitness(input, desiredOutput);
             findElites();
             Individual[] toCrossMutate = Arrays.copyOfRange(population, (int) (elites.length * 0.5), populationSize);
-            tournamentSelect(toCrossMutate, 2);
+            rouletteWheelSelect(toCrossMutate);
             crossover(toCrossMutate, crossoverPoint);
             mutation(toCrossMutate, mutationProb, mutateMin, mutateMax);
             gen++;
@@ -47,9 +46,8 @@ public class GA_MLP {
     }
 
     private void evaluateFitness(double[] input, double[] desiredOutput) {
-        totalFitness = 0;
         for (int i = 0; i < populationSize; i++) {
-            totalFitness += population[i].evaluateFitness(input, desiredOutput);
+            population[i].evaluateFitness(input, desiredOutput);
         }
     }
 
@@ -61,18 +59,24 @@ public class GA_MLP {
         }
     }
 
-    private void rouletteWheelSelect() {
-        List<Individual> selected = new ArrayList<>(populationSize);
+    private void rouletteWheelSelect(Individual[] group) {
+        List<Individual> selected = new ArrayList<>(group.length);
         // Using Roulette Wheel Selection
         // Find selection prob. and init cumulative prob.
-        int n = population.length;
+        int n = group.length;
         double[] cumulativeProb = new double[n];
+        double totalFitness = 0;
+        for (Individual p : group) {
+            totalFitness += p.fitness;
+        }
+
+        double[] selectProb = new double[n];
         for (int i = 0; i < n; i++) {
-            population[i].selectProb = population[i].fitness / totalFitness;
+            selectProb[i] = group[i].fitness / totalFitness;
             if (i == 0) {
-                cumulativeProb[i] = population[i].selectProb;
+                cumulativeProb[i] = selectProb[i];
             } else {
-                cumulativeProb[i] = population[i].selectProb + cumulativeProb[i - 1];
+                cumulativeProb[i] = selectProb[i] + cumulativeProb[i - 1];
             }
         }
 
@@ -92,6 +96,7 @@ public class GA_MLP {
             }
         }
 
+        selected.addAll(List.of(elites));
         population = selected.toArray(new Individual[populationSize]);
     }
 
