@@ -28,7 +28,7 @@ public class GA_MLP {
         while (gen < maxGeneration) {
             evaluateFitness(input, desiredOutput);
             findElites();
-            Individual[] toCrossMutate = Arrays.copyOfRange(population, (int) (elites.length * 0.5), populationSize);
+            Individual[] toCrossMutate = Arrays.copyOfRange(population, elites.length, populationSize);
             rouletteWheelSelect(toCrossMutate);
             crossover(toCrossMutate, crossoverPoint);
             mutation(toCrossMutate, mutationProb, mutateMin, mutateMax);

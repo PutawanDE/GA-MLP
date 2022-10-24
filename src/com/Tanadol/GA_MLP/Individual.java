@@ -6,10 +6,16 @@ import java.util.List;
 public class Individual {
     private static final MathFunction linearFn = (x) -> x;
     private static final MathFunction sigmoidFn = (x) -> 1.0 / (1.0 + Math.exp(x));
+    private static final MathFunction leakyReluFn = (x) -> {
+        if (x <= 0) return 0.01 * x;
+        else return x;
+    };
+
+    private static final MathFunction tanhFn = (x) -> 2.0 / (1 + Math.exp(-2.0 * x)) - 1.0;
 
     private static final double minWeight = 0.0;
     private static final double maxWeight = 1.0;
-    private static final int[] nodes = new int[]{30, 16, 1};
+    private static final int[] nodes = new int[]{30, 1, 1};
     private static final Matrix[] biases = initBiasMat();
 
     protected Network network;
@@ -63,14 +69,11 @@ public class Individual {
             this.network.feedForward(input[i], desiredOutputs[i]);
 
             double predicted = this.network.activations[nodes.length - 1].data[0][0];
-//            double output1 = this.network.activations[nodes.length - 1].data[0][0];
-//            double output2 = this.network.activations[nodes.length - 1].data[1][0];
 
             System.out.println(predicted);
 
-            // 1 for positive, 0 for negative, positive->first output is 1
+//             1 for positive, 0 for negative, positive->first output is 1
             int predictedPositiveOrNegative = predicted >= 0.4 ? 1 : 0;
-//            int predictedPositiveOrNegative = output1 > output2 ? 1 : 0;
             int actualPositiveOrNegative = (int) desiredOutputs[i][0];
 
             if (actualPositiveOrNegative == 1 && predictedPositiveOrNegative == 1) {
