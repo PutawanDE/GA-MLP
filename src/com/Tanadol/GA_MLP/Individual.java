@@ -4,14 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Individual {
-    private static final MathFunction linearFn = (x) -> x;
     private static final MathFunction sigmoidFn = (x) -> 1.0 / (1.0 + Math.exp(x));
-    private static final MathFunction leakyReluFn = (x) -> {
-        if (x <= 0) return 0.01 * x;
-        else return x;
-    };
-
-    private static final MathFunction tanhFn = (x) -> 2.0 / (1 + Math.exp(-2.0 * x)) - 1.0;
 
     private static final double minWeight = 0.0;
     private static final double maxWeight = 1.0;

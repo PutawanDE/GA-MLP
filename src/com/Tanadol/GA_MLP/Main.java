@@ -16,7 +16,7 @@ public class Main {
 
             for (int i = 1; i <= k; i++) {
                 Pair<double[][], double[][]> trainingSet = readTrainingData(inputPath + "train" + i + ".csv");
-                Individual sol = train(trainingSet);
+                Individual sol = train(trainingSet, k);
 
                 Pair<double[][], double[][]> testSet = readTrainingData(inputPath + "test" + i + ".csv");
                 List<Double> output = new ArrayList<>(testSet.x.length);
@@ -41,7 +41,7 @@ public class Main {
         }
     }
 
-    private static Individual train(Pair<double[][], double[][]> inOut) throws IOException {
+    private static Individual train(Pair<double[][], double[][]> inOut, int k) throws IOException {
         GA_MLP ga = new GA_MLP();
         int rows = inOut.x.length;
         Individual[] lastSol = null;
@@ -73,10 +73,10 @@ public class Main {
             System.out.println("Elapsed Time iteration " + (i + 1) + ": " + (finish - start));
             System.out.println("---------------------------------");
         }
-        saveArrayToFile(loss, "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\result\\loss1.csv");
-        saveArrayToFile(fitness, "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\result\\fitness1.csv");
-        saveArrayToFile(predicted, "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\result\\predicted1.csv");
-        saveArrayToFile(target, "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\result\\target1.csv");
+        saveArrayToFile(loss, "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\result\\loss" + k + ".csv");
+        saveArrayToFile(fitness, "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\result\\fitness" + k + ".csv");
+        saveArrayToFile(predicted, "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\result\\predicted" + k + ".csv");
+        saveArrayToFile(target, "D:\\PUTAWAN\\ComputerProjects\\CI\\HW3-GA\\result\\target" + k + ".csv");
 
         bestSolution = lastSol[0];
         System.out.println("D: " + bestSolution.fitness);

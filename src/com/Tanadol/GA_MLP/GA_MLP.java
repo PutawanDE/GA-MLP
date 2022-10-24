@@ -100,24 +100,6 @@ public class GA_MLP {
         population = selected.toArray(new Individual[populationSize]);
     }
 
-    private void tournamentSelect(Individual[] group, int k) {
-        List<Individual> selected = new ArrayList<>(group.length);
-
-        for (int j = 0; j < group.length; j++) {
-            Individual best = null;
-            for (int i = 0; i < k; i++) {
-                int rand = random.nextInt(group.length);
-                if (best == null || group[rand].fitness >= best.fitness) {
-                    best = group[rand];
-                }
-            }
-            selected.add(new Individual(best));
-        }
-
-        selected.addAll(List.of(elites));
-        population = selected.toArray(new Individual[0]);
-    }
-
     // N-point Cross-Over
     private void crossover(Individual[] group, int n) {
         List<Individual> newPopulation = new ArrayList<>(group.length);
